@@ -1,0 +1,3 @@
+FROM cnrock/2048:1.30.4
+
+EXPOSE 80
