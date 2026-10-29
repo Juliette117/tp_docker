@@ -1,0 +1,5 @@
+pip.conf
+__pycache__/
+.pytest_cache/
+.venv/
+worker*.tar

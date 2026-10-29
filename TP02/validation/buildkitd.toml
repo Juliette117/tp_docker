@@ -1,0 +1,3 @@
+# Registre HTTP réservé au réseau Docker de validation du TP.
+[registry."tp02-registry:5000"]
+  http = true

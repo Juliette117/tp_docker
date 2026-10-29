@@ -1,0 +1,5 @@
+# 1. Démonstration volontairement vulnérable.
+FROM python:3.12-slim-bookworm
+ARG DEMO_TOKEN
+RUN test -n "$DEMO_TOKEN" && printf '%s\n' "$DEMO_TOKEN" > /demo-token.txt
+CMD ["cat", "/demo-token.txt"]
