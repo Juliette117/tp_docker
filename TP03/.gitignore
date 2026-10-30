@@ -1,0 +1,15 @@
+# Résultats régénérables ; les rapports de secrets peuvent contenir leur contexte.
+/artifacts/
+
+# Clés privées et configuration locale, y compris hors des dossiers habituels.
+*.key
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.tp03-backup
+
+# Fichiers générés par macOS et Python.
+.DS_Store
+__pycache__/
+*.py[cod]

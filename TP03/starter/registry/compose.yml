@@ -1,0 +1,75 @@
+name: tp03-registry
+
+services:
+  registry:
+    image: registry:2.8.3
+    restart: unless-stopped
+    environment:
+      REGISTRY_HTTP_SECRET: ${REGISTRY_HTTP_SECRET:?Exécuter ./setup.sh avant docker compose}
+    volumes:
+      - ./config.yml:/etc/docker/registry/config.yml:ro
+      - ./auth/htpasswd:/auth/htpasswd:ro
+      - registry-data:/var/lib/registry
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5001/debug/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  gateway:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs/registry.crt:/etc/nginx/tls/registry.crt:ro
+      - ./certs/registry.key:/etc/nginx/tls/registry.key:ro
+      - ./auth:/etc/nginx/auth:ro
+    depends_on:
+      registry:
+        condition: service_healthy
+      ui:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--no-check-certificate", "--spider", "https://127.0.0.1:5000/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  ui:
+    image: joxit/docker-registry-ui:2.5.7
+    restart: unless-stopped
+    environment:
+      SINGLE_REGISTRY: "true"
+      REGISTRY_TITLE: Shop SAS — registre privé
+      REGISTRY_SECURED: "true"
+      SHOW_CONTENT_DIGEST: "true"
+      DELETE_IMAGES: "false"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  mirror:
+    image: registry:2.8.3
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:5000"
+    volumes:
+      - ./mirror-config.yml:/etc/docker/registry/config.yml:ro
+      - mirror-data:/var/lib/registry
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5000/v2/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  registry-data:
+  mirror-data:
